@@ -288,10 +288,10 @@ body {
 
 .track-info {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  min-width: 180px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 130px;
 }
 
 .track-title {
@@ -301,12 +301,13 @@ body {
 }
 
 .track-emoji {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
 }
 
 .instrument-select {
-  padding: 4px 8px;
-  font-size: 0.8rem;
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 0.85rem;
   font-weight: 700;
   font-family: var(--font-main);
   background: var(--accent-yellow);
@@ -316,17 +317,24 @@ body {
 
 .track-controls {
   display: flex;
-  gap: 4px;
-  margin-left: auto;
+  gap: 6px;
 }
 
 .track-btn {
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.85rem;
   font-weight: 700;
   font-family: var(--font-main);
   border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0 var(--border-color);
   cursor: pointer;
+  text-align: center;
+}
+
+.track-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--border-color);
 }
 
 .track-btn--play {
