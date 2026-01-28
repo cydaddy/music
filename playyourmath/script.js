@@ -160,7 +160,11 @@ const instrumentKeys = Object.keys(RHYTHM_INSTRUMENTS);
 
 // ===== Audio =====
 let audioContext = null;
-function initAudio() {
+function initAudio(forceNew = false) {
+  if (forceNew && audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
   if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
   if (audioContext.state === 'suspended') audioContext.resume();
   return audioContext;
@@ -515,10 +519,9 @@ function playTrack(trackId) {
   const track = state.tracks.find(t => t.id === trackId);
   if (!track) return;
 
-  // Toggle off if already playing
+  // If already playing this track, stop first then restart
   if (state.trackPlayStates[trackId]?.isPlaying) {
     stopTrackPlayback(trackId);
-    return;
   }
 
   // Initialize play state for this track
@@ -539,6 +542,7 @@ function playTrack(trackId) {
   const cells = trackEl ? trackEl.querySelectorAll('.grid-cell') : [];
 
   function playOnce() {
+    if (!state.trackPlayStates[trackId]?.isPlaying) return; // Check before playing
     const ctx = initAudio();
     let time = ctx.currentTime + 0.05;
 
@@ -575,6 +579,9 @@ function stopTrackPlayback(trackId) {
     }
   }
 
+  // Force close audio context to immediately stop all sounds
+  initAudio(true);
+
   // Find track element and restore button
   const track = state.tracks.find(t => t.id === trackId);
   if (track) {
@@ -592,9 +599,9 @@ function stopTrackPlayback(trackId) {
 }
 
 function playAllTracks() {
+  // If already playing, stop first then restart fresh
   if (state.isPlaying) {
     stopPlayback();
-    return;
   }
 
   state.isPlaying = true;
@@ -602,6 +609,7 @@ function playAllTracks() {
   el.playAllBtn.classList.add('action-btn--stop');
 
   function playOnce() {
+    if (!state.isPlaying) return; // Check before playing
     const ctx = initAudio();
     const tempo = 100;
 
@@ -649,6 +657,9 @@ function stopPlayback() {
     clearInterval(state.playIntervalId);
     state.playIntervalId = null;
   }
+
+  // Force close audio context to immediately stop all sounds
+  initAudio(true);
 
   // Clear all playing indicators
   document.querySelectorAll('.grid-cell--playing').forEach(c => {
