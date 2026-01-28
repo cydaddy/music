@@ -218,7 +218,8 @@ const el = {
   playAllBtn: document.getElementById('play-all-btn'),
   clearAllBtn: document.getElementById('clear-all-btn'),
   summaryTracks: document.getElementById('summary-tracks'),
-  messagePopup: document.getElementById('message-popup')
+  messagePopup: document.getElementById('message-popup'),
+  groupConsecutiveCheckbox: document.getElementById('group-consecutive-checkbox')
 };
 
 // ===== Utility =====
@@ -402,31 +403,42 @@ function updateFractionSummary() {
         <span class="summary-total summary-total--empty"></span>
       `;
     } else {
-      // Group consecutive active cells
-      const groups = [];
-      let currentGroupSize = 0;
+      const groupConsecutive = el.groupConsecutiveCheckbox?.checked ?? true;
+      let eqHTML = '<span class="summary-equation">';
 
-      for (let i = 0; i < track.cells.length; i++) {
-        if (track.cells[i]) {
-          currentGroupSize++;
-        } else {
-          if (currentGroupSize > 0) {
-            groups.push(currentGroupSize);
-            currentGroupSize = 0;
+      if (groupConsecutive) {
+        // Group consecutive active cells
+        const groups = [];
+        let currentGroupSize = 0;
+
+        for (let i = 0; i < track.cells.length; i++) {
+          if (track.cells[i]) {
+            currentGroupSize++;
+          } else {
+            if (currentGroupSize > 0) {
+              groups.push(currentGroupSize);
+              currentGroupSize = 0;
+            }
           }
         }
-      }
-      // Don't forget the last group
-      if (currentGroupSize > 0) {
-        groups.push(currentGroupSize);
+        // Don't forget the last group
+        if (currentGroupSize > 0) {
+          groups.push(currentGroupSize);
+        }
+
+        // Build equation from groups
+        groups.forEach((groupSize, idx) => {
+          if (idx > 0) eqHTML += '<span class="eq-plus">+</span>';
+          eqHTML += vfHTML(groupSize, track.denominator);
+        });
+      } else {
+        // Show each cell individually
+        for (let i = 0; i < count; i++) {
+          if (i > 0) eqHTML += '<span class="eq-plus">+</span>';
+          eqHTML += vfHTML(1, track.denominator);
+        }
       }
 
-      // Build equation from groups
-      let eqHTML = '<span class="summary-equation">';
-      groups.forEach((groupSize, idx) => {
-        if (idx > 0) eqHTML += '<span class="eq-plus">+</span>';
-        eqHTML += vfHTML(groupSize, track.denominator);
-      });
       eqHTML += '<span class="eq-equals">=</span></span>';
 
       row.innerHTML = `
@@ -724,6 +736,9 @@ function init() {
   el.addTrackBtn.addEventListener('click', addTrack);
   el.playAllBtn.addEventListener('click', playAllTracks);
   el.clearAllBtn.addEventListener('click', clearAll);
+
+  // Real-time update when checkbox changes
+  el.groupConsecutiveCheckbox?.addEventListener('change', updateFractionSummary);
 
   el.measureCount.textContent = state.measureCount;
   renderAllTracks();
