@@ -288,9 +288,10 @@ body {
 
 .track-info {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 100px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
 }
 
 .track-title {
@@ -316,10 +317,11 @@ body {
 .track-controls {
   display: flex;
   gap: 4px;
+  margin-left: auto;
 }
 
 .track-btn {
-  padding: 4px 8px;
+  padding: 4px 10px;
   font-size: 0.75rem;
   font-weight: 700;
   font-family: var(--font-main);
@@ -330,6 +332,10 @@ body {
 .track-btn--play {
   background: var(--accent-green);
   color: white;
+}
+
+.track-btn--stop {
+  background: #ef4444 !important;
 }
 
 .track-btn--delete {

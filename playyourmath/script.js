@@ -183,6 +183,7 @@ const state = {
   fractionMode: 'improper', // 'improper' or 'mixed'
   isPlaying: false,
   playIntervalId: null,
+  trackPlayStates: {}, // { trackId: { isPlaying: bool, intervalId: number } }
   tracks: [
     { id: 1, instrument: 'kick', denominator: 4, cells: [] },
     { id: 2, instrument: 'snare', denominator: 4, cells: [] }
@@ -514,35 +515,80 @@ function playTrack(trackId) {
   const track = state.tracks.find(t => t.id === trackId);
   if (!track) return;
 
-  const ctx = initAudio();
+  // Toggle off if already playing
+  if (state.trackPlayStates[trackId]?.isPlaying) {
+    stopTrackPlayback(trackId);
+    return;
+  }
+
+  // Initialize play state for this track
+  state.trackPlayStates[trackId] = { isPlaying: true, intervalId: null };
+
+  // Update button appearance
+  const trackIndex = state.tracks.indexOf(track);
+  const trackEl = el.tracksContainer.children[trackIndex];
+  const playBtn = trackEl?.querySelector('.track-btn--play');
+  if (playBtn) {
+    playBtn.textContent = '⏹';
+    playBtn.classList.add('track-btn--stop');
+  }
+
   const tempo = 100;
   const cellDur = (60 / tempo) * (4 / track.denominator);
   const inst = RHYTHM_INSTRUMENTS[track.instrument];
-
-  // Get track element for visual feedback
-  const trackIndex = state.tracks.indexOf(track);
-  const trackEl = el.tracksContainer.children[trackIndex];
   const cells = trackEl ? trackEl.querySelectorAll('.grid-cell') : [];
 
-  let time = ctx.currentTime + 0.05;
-  track.cells.forEach((active, idx) => {
-    const delay = (time - ctx.currentTime) * 1000;
+  function playOnce() {
+    const ctx = initAudio();
+    let time = ctx.currentTime + 0.05;
 
-    // Schedule visual highlight
-    setTimeout(() => {
-      cells.forEach(c => c.classList.remove('grid-cell--playing'));
-      if (cells[idx]) cells[idx].classList.add('grid-cell--playing');
-    }, delay);
+    track.cells.forEach((active, idx) => {
+      const delay = (time - ctx.currentTime) * 1000;
 
-    if (active) inst.play(ctx, time);
-    time += cellDur;
-  });
+      setTimeout(() => {
+        if (!state.trackPlayStates[trackId]?.isPlaying) return;
+        cells.forEach(c => c.classList.remove('grid-cell--playing'));
+        if (cells[idx]) cells[idx].classList.add('grid-cell--playing');
+      }, delay);
 
-  // Clear highlight after playback ends
-  const totalDur = track.cells.length * cellDur * 1000;
-  setTimeout(() => {
-    cells.forEach(c => c.classList.remove('grid-cell--playing'));
-  }, totalDur + 100);
+      if (active) inst.play(ctx, time);
+      time += cellDur;
+    });
+  }
+
+  // Calculate loop duration
+  const loopDur = track.cells.length * cellDur * 1000;
+
+  playOnce();
+  state.trackPlayStates[trackId].intervalId = setInterval(() => {
+    if (state.trackPlayStates[trackId]?.isPlaying) playOnce();
+  }, loopDur);
+}
+
+function stopTrackPlayback(trackId) {
+  const playState = state.trackPlayStates[trackId];
+  if (playState) {
+    playState.isPlaying = false;
+    if (playState.intervalId) {
+      clearInterval(playState.intervalId);
+      playState.intervalId = null;
+    }
+  }
+
+  // Find track element and restore button
+  const track = state.tracks.find(t => t.id === trackId);
+  if (track) {
+    const trackIndex = state.tracks.indexOf(track);
+    const trackEl = el.tracksContainer.children[trackIndex];
+    const playBtn = trackEl?.querySelector('.track-btn--play');
+    if (playBtn) {
+      playBtn.textContent = '▶';
+      playBtn.classList.remove('track-btn--stop');
+    }
+    // Clear playing indicators for this track
+    const cells = trackEl?.querySelectorAll('.grid-cell');
+    cells?.forEach(c => c.classList.remove('grid-cell--playing'));
+  }
 }
 
 function playAllTracks() {
