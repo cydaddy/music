@@ -401,12 +401,31 @@ function updateFractionSummary() {
         <span class="summary-total summary-total--empty"></span>
       `;
     } else {
-      // Build equation
-      let eqHTML = '<span class="summary-equation">';
-      for (let i = 0; i < count; i++) {
-        if (i > 0) eqHTML += '<span class="eq-plus">+</span>';
-        eqHTML += vfHTML(1, track.denominator);
+      // Group consecutive active cells
+      const groups = [];
+      let currentGroupSize = 0;
+
+      for (let i = 0; i < track.cells.length; i++) {
+        if (track.cells[i]) {
+          currentGroupSize++;
+        } else {
+          if (currentGroupSize > 0) {
+            groups.push(currentGroupSize);
+            currentGroupSize = 0;
+          }
+        }
       }
+      // Don't forget the last group
+      if (currentGroupSize > 0) {
+        groups.push(currentGroupSize);
+      }
+
+      // Build equation from groups
+      let eqHTML = '<span class="summary-equation">';
+      groups.forEach((groupSize, idx) => {
+        if (idx > 0) eqHTML += '<span class="eq-plus">+</span>';
+        eqHTML += vfHTML(groupSize, track.denominator);
+      });
       eqHTML += '<span class="eq-equals">=</span></span>';
 
       row.innerHTML = `
@@ -599,10 +618,16 @@ function stopTrackPlayback(trackId) {
 }
 
 function playAllTracks() {
-  // If already playing, stop first then restart fresh
+  // If already playing, just stop (toggle off)
   if (state.isPlaying) {
     stopPlayback();
+    return;
   }
+
+  // Stop any individual track playbacks
+  Object.keys(state.trackPlayStates).forEach(trackId => {
+    stopTrackPlayback(parseInt(trackId));
+  });
 
   state.isPlaying = true;
   el.playAllBtn.textContent = '⏹ 정지';
