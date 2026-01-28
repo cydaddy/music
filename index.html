@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayYourMath - 음악으로 배우는 분수</title>
+  <meta name="description" content="음악의 박자를 통해 분수 개념과 덧셈을 학습하는 에듀테크 도구">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <h1 class="header__title">🎵 PlayYourMath</h1>
+    <p class="header__subtitle">음악으로 배우는 분수</p>
+  </header>
+
+  <main class="main-content">
+    <div class="controls-bar">
+      <div class="control-group">
+        <label class="control-label">마디 수</label>
+        <div class="measure-controls">
+          <button class="measure-btn" id="remove-measure-btn">−</button>
+          <span class="measure-count" id="measure-count">2</span>
+          <button class="measure-btn" id="add-measure-btn">+</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">분수 표시</label>
+        <div class="fraction-mode-buttons">
+          <button class="mode-btn mode-btn--active" data-mode="improper">가분수</button>
+          <button class="mode-btn" data-mode="mixed">대분수</button>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="action-btn action-btn--play" id="play-all-btn">▶ 재생</button>
+        <button class="action-btn action-btn--clear" id="clear-all-btn">🗑️ 초기화</button>
+      </div>
+    </div>
+
+    <div class="tracks-scroll-wrapper" id="tracks-scroll-wrapper">
+      <div class="tracks-scroll-content" id="tracks-scroll-content">
+        <div class="tracks-container" id="tracks-container">
+          <!-- Tracks will be dynamically generated -->
+        </div>
+      </div>
+    </div>
+
+    <div class="add-track-area">
+      <button class="add-btn" id="add-track-btn">➕ 트랙 추가</button>
+    </div>
+
+    <div class="fraction-summary" id="fraction-summary">
+      <div class="summary-title">🧮 분수 합계</div>
+      <div class="summary-tracks" id="summary-tracks">
+        <!-- Summary for each track -->
+      </div>
+    </div>
+  </main>
+
+  <div class="message-popup" id="message-popup">
+    <div class="message-content"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
