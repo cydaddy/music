@@ -187,7 +187,8 @@ const state = {
   fractionMode: 'improper', // 'improper' or 'mixed'
   isPlaying: false,
   playIntervalId: null,
-  trackPlayStates: {}, // { trackId: { isPlaying: bool, intervalId: number } }
+  playbackSessionId: 0, // Increments each time playback starts to cancel stale visual updates
+  trackPlayStates: {}, // { trackId: { isPlaying: bool, intervalId: number, sessionId: number } }
   tracks: [
     { id: 1, instrument: 'kick', denominator: 4, cells: [] },
     { id: 2, instrument: 'snare', denominator: 4, cells: [] }
@@ -543,8 +544,12 @@ function playTrack(trackId) {
     stopTrackPlayback(trackId);
   }
 
-  // Initialize play state for this track
-  state.trackPlayStates[trackId] = { isPlaying: true, intervalId: null };
+  // Increment global session ID and use it for this track
+  state.playbackSessionId++;
+  const currentSessionId = state.playbackSessionId;
+
+  // Initialize play state for this track with session ID
+  state.trackPlayStates[trackId] = { isPlaying: true, intervalId: null, sessionId: currentSessionId };
 
   // Update button appearance
   const trackIndex = state.tracks.indexOf(track);
@@ -561,7 +566,8 @@ function playTrack(trackId) {
   const cells = trackEl ? trackEl.querySelectorAll('.grid-cell') : [];
 
   function playOnce() {
-    if (!state.trackPlayStates[trackId]?.isPlaying) return; // Check before playing
+    const playState = state.trackPlayStates[trackId];
+    if (!playState?.isPlaying || playState.sessionId !== currentSessionId) return;
     const ctx = initAudio();
     let time = ctx.currentTime + 0.05;
 
@@ -569,7 +575,8 @@ function playTrack(trackId) {
       const delay = (time - ctx.currentTime) * 1000;
 
       setTimeout(() => {
-        if (!state.trackPlayStates[trackId]?.isPlaying) return;
+        const playState = state.trackPlayStates[trackId];
+        if (!playState?.isPlaying || playState.sessionId !== currentSessionId) return;
         cells.forEach(c => c.classList.remove('grid-cell--playing'));
         if (cells[idx]) cells[idx].classList.add('grid-cell--playing');
       }, delay);
@@ -584,7 +591,8 @@ function playTrack(trackId) {
 
   playOnce();
   state.trackPlayStates[trackId].intervalId = setInterval(() => {
-    if (state.trackPlayStates[trackId]?.isPlaying) playOnce();
+    const playState = state.trackPlayStates[trackId];
+    if (playState?.isPlaying && playState.sessionId === currentSessionId) playOnce();
   }, loopDur);
 }
 
@@ -629,12 +637,16 @@ function playAllTracks() {
     stopTrackPlayback(parseInt(trackId));
   });
 
+  // Increment session ID to invalidate any stale setTimeout callbacks
+  state.playbackSessionId++;
+  const currentSessionId = state.playbackSessionId;
+
   state.isPlaying = true;
   el.playAllBtn.textContent = '⏹ 정지';
   el.playAllBtn.classList.add('action-btn--stop');
 
   function playOnce() {
-    if (!state.isPlaying) return; // Check before playing
+    if (!state.isPlaying || state.playbackSessionId !== currentSessionId) return;
     const ctx = initAudio();
     const tempo = 100;
 
@@ -651,9 +663,9 @@ function playAllTracks() {
       track.cells.forEach((active, idx) => {
         const delay = (time - ctx.currentTime) * 1000;
 
-        // Schedule visual highlight
+        // Schedule visual highlight with session check
         setTimeout(() => {
-          if (!state.isPlaying) return;
+          if (!state.isPlaying || state.playbackSessionId !== currentSessionId) return;
           cells.forEach(c => c.classList.remove('grid-cell--playing'));
           if (cells[idx]) cells[idx].classList.add('grid-cell--playing');
         }, delay);
@@ -672,7 +684,7 @@ function playAllTracks() {
 
   playOnce(); // Play immediately
   state.playIntervalId = setInterval(() => {
-    if (state.isPlaying) playOnce();
+    if (state.isPlaying && state.playbackSessionId === currentSessionId) playOnce();
   }, loopDur);
 }
 
