@@ -501,7 +501,6 @@ body {
   line-height: 1;
 }
 
-.cell-vf-num {}
 
 .cell-vf-line {
   width: 12px;
@@ -510,7 +509,6 @@ body {
   margin: 1px 0;
 }
 
-.cell-vf-den {}
 
 .grid-cell--active .cell-vf {
   color: rgba(255, 255, 255, 0.6);
