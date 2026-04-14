@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎵 리듬 마스터</title>
+    <meta name="description" content="전자칠판용 리듬 연습 및 리듬 활동">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== Setup Screen ===== -->
+<div id="setup-screen" class="screen active">
+    <div class="setup-container">
+        <h1 class="app-title"><span class="t-bounce">🎵</span> 리듬 마스터 <span class="t-bounce d2">🎶</span></h1>
+        <p class="app-sub">사용할 음표를 선택하고 모드를 골라요!</p>
+
+        <div class="section-card">
+            <h2 class="section-title">🎼 음표 선택</h2>
+            <div class="note-grid" id="note-checkboxes"></div>
+        </div>
+
+        <div class="section-card">
+            <h2 class="section-title">🕹️ 모드 선택</h2>
+            <div class="mode-buttons">
+                <button class="mode-btn practice-btn" onclick="App.openPractice()">
+                    <span class="mode-icon">🎹</span>
+                    <span class="mode-name">연습 모드</span>
+                    <span class="mode-desc">랜덤 악보로 손박수 연습</span>
+                </button>
+                <button class="mode-btn game-btn" onclick="App.openGameSetup()">
+                    <span class="mode-icon">🎮</span>
+                    <span class="mode-name">함께 연주 모드</span>
+                    <span class="mode-desc">터치 리듬 대결!</span>
+                </button>
+                <button class="mode-btn sync-btn" onclick="App.openSync()">
+                    <span class="mode-icon">⚙️</span>
+                    <span class="mode-name">싱크 보정</span>
+                    <span class="mode-desc">터치 딜레이 최적화</span>
+                </button>
+            </div>
+        </div>
+
+        <button class="fs-btn" onclick="App.toggleFullscreen()" title="전체화면">⛶</button>
+    </div>
+</div>
+
+<!-- ===== Practice Screen ===== -->
+<div id="practice-screen" class="screen">
+    <div class="top-bar">
+        <button class="back-btn" onclick="App.goMenu()">← 첫 화면</button>
+        <h2 class="bar-title">🎹 연습 모드</h2>
+        <div class="bar-controls">
+            <div class="ctrl-group">
+                <span class="ctrl-label">마디:</span>
+                <button class="pm-btn active" data-m="4" onclick="App.setPracticeMeasures(4)">4</button>
+                <button class="pm-btn" data-m="2" onclick="App.setPracticeMeasures(2)">2</button>
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">난이도:</span>
+                <button class="gd-btn diff-easy" data-d="easy" onclick="App.setGameDifficulty('easy')">🟢</button>
+                <button class="gd-btn diff-medium" data-d="medium" onclick="App.setGameDifficulty('medium')">🟡</button>
+                <button class="gd-btn diff-hard active" data-d="hard" onclick="App.setGameDifficulty('hard')">🔴</button>
+            </div>
+        </div>
+    </div>
+    <div class="practice-body">
+        <canvas id="practice-canvas" class="notation-canvas"></canvas>
+        <div class="practice-controls">
+            <button class="action-btn" id="practice-play-btn" onclick="App.playPractice()">▶ 재생</button>
+            <button class="action-btn new-btn" onclick="App.generatePractice()">🔄 새 악보</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Game Setup Screen ===== -->
+<div id="game-setup-screen" class="screen">
+    <div class="top-bar">
+        <button class="back-btn" onclick="App.goMenu()">← 첫 화면</button>
+        <h2 class="bar-title">🎮 연주 설정</h2>
+        <div class="spacer"></div>
+    </div>
+    <div class="gsetup-body">
+        <div class="gs-group">
+            <label>👥 인원 수</label>
+            <div class="gs-btns">
+                <button class="gp-btn active" data-p="1" onclick="App.setGamePlayers(1)">1명</button>
+                <button class="gp-btn" data-p="2" onclick="App.setGamePlayers(2)">2명</button>
+                <button class="gp-btn" data-p="3" onclick="App.setGamePlayers(3)">3명</button>
+                <button class="gp-btn" data-p="4" onclick="App.setGamePlayers(4)">4명</button>
+                <button class="gp-btn" data-p="5" onclick="App.setGamePlayers(5)">5명</button>
+                <button class="gp-btn" data-p="6" onclick="App.setGamePlayers(6)">6명</button>
+            </div>
+        </div>
+        <div class="gs-group">
+            <label>🎼 악보</label>
+            <div class="gs-btns">
+                <button class="gs-btn active" data-s="true" onclick="App.setGameSame(true)">같은 악보</button>
+                <button class="gs-btn" data-s="false" onclick="App.setGameSame(false)">다른 악보</button>
+            </div>
+        </div>
+        <div class="gs-group">
+            <label>🔁 반복</label>
+            <div class="gs-btns">
+                <button class="gr-btn active" data-r="1" onclick="App.setGameRepeats(1)">1회</button>
+                <button class="gr-btn" data-r="2" onclick="App.setGameRepeats(2)">2회</button>
+                <button class="gr-btn" data-r="3" onclick="App.setGameRepeats(3)">3회</button>
+                <button class="gr-btn" data-r="4" onclick="App.setGameRepeats(4)">4회</button>
+                <button class="gr-btn" data-r="5" onclick="App.setGameRepeats(5)">5회</button>
+            </div>
+        </div>
+        <div class="gs-group">
+            <label>⭐ 난이도</label>
+            <div class="gs-btns">
+                <button class="gd-btn diff-easy active" data-d="easy" onclick="App.setGameDifficulty('easy')">🟢 쉬움</button>
+                <button class="gd-btn diff-medium" data-d="medium" onclick="App.setGameDifficulty('medium')">🟡 보통</button>
+                <button class="gd-btn diff-hard" data-d="hard" onclick="App.setGameDifficulty('hard')">🔴 어려움</button>
+            </div>
+            <div id="diff-desc" class="diff-desc-text">4분음표만 (매 박 규칙적)</div>
+        </div>
+        <div class="gs-group">
+            <label>🎵 속도 (BPM)</label>
+            <div class="gs-btns bpm-row">
+                <button class="bpm-btn" onclick="App.setGameBPM(-10)">-10</button>
+                <button class="bpm-btn" onclick="App.setGameBPM(-5)">-5</button>
+                <span class="bpm-val big">♩=<span id="game-bpm">80</span></span>
+                <button class="bpm-btn" onclick="App.setGameBPM(5)">+5</button>
+                <button class="bpm-btn" onclick="App.setGameBPM(10)">+10</button>
+            </div>
+        </div>
+        <button class="start-btn" onclick="App.startGame()">🎬 연주 시작!</button>
+    </div>
+</div>
+
+<!-- ===== Game Play Screen ===== -->
+<div id="game-play-screen" class="screen">
+    <div class="game-top-bar">
+        <button class="back-btn small" onclick="App.goMenu()">✕</button>
+        <span class="game-round" id="game-round-info">연주 준비</span>
+    </div>
+    <div class="game-lanes-wrap" id="game-lanes"></div>
+    <!-- 박자 듣기 버튼 / TAP 버튼이 동적으로 들어갈 영역 -->
+    <div class="game-action-bar" id="game-action-bar"></div>
+    <!-- Countdown Overlay -->
+    <div class="countdown-overlay" id="game-countdown" style="display:none;">
+        <div class="countdown-label">박자를 세어요!</div>
+        <div class="countdown-num" id="countdown-num"></div>
+    </div>
+</div>
+
+<!-- ===== Result Screen ===== -->
+<div id="result-screen" class="screen">
+    <div class="result-container">
+        <h2 class="result-title">🏆 최종 결과</h2>
+        <div id="rankings-body"></div>
+        <div class="result-btns">
+            <button class="action-btn" onclick="App.restartGame()">🔄 다시하기</button>
+            <button class="action-btn secondary" onclick="App.goMenu()">🏠 메뉴로</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Sync Calibration Screen ===== -->
+<div id="sync-screen" class="screen">
+    <div class="top-bar">
+        <button class="back-btn" onclick="App.stopSync(); App.goMenu()">← 첫 화면</button>
+        <h2 class="bar-title">⚙️ 싱크 보정</h2>
+        <div class="spacer"></div>
+    </div>
+    <div class="sync-body" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 30px; height: 100%; padding-bottom:50px;">
+        <p style="text-align:center; color:#666;">기기마다 터치 인식 속도가 다를 수 있습니다.<br>시작을 누르고 박자 소리에 맞춰 TAP 버튼을 8번 터치하세요.</p>
+        <button class="action-btn" id="sync-start-btn" onclick="App.startSync()">▶ 보정 시작</button>
+        <div id="sync-result" style="font-size: 1.2rem; font-weight: bold; color: white; background: #6c5ce7; padding: 10px 20px; border-radius: 8px;">대기 중</div>
+        <button id="sync-tap-btn" style="display:flex; align-items:center; justify-content:center; flex:0 0 200px; width: 200px; height: 200px; border-radius: 50%; font-family:var(--display); font-size: 3.5rem; letter-spacing:0.1em; background: #00b4ff; color: white; border: none; box-shadow: 0 8px 0 #0090cc; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;" onmousedown="App.tapSync()" ontouchstart="event.preventDefault(); App.tapSync()">TAP</button>
+    </div>
+</div>
+
+<script src="audio.js"></script>
+<script src="notation.js"></script>
+<script src="play.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
